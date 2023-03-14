@@ -16,6 +16,7 @@ enable_forwarding(){
 }
 
 enable_seg6(){
+    enable_forwarding
     sysctl -w net.ipv6.conf.all.seg6_enabled=1
     sysctl -w net.ipv4.conf.default.rp_filter=0
     sysctl -w net.ipv4.conf.all.rp_filter=0
