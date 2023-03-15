@@ -7,6 +7,9 @@
 if [[ $(id -u) -ne 0 ]] ; then echo "Please run with sudo" ; exit 1 ; fi
 
 
+current_script=$(realpath $0)
+current_dir=$(dirname $current_script)
+
 echo_run () {
     echo "$@"
     $@ || exit 1
@@ -38,6 +41,10 @@ create_net() {
     echo_run ip netns exec ns2 ip addr add 192.168.20.2/24 dev ns2_veth2
     echo_run ip netns exec ns1 ip -6 addr add 2001:db8:20::1/48 dev ns1_veth2
     echo_run ip netns exec ns2 ip -6 addr add 2001:db8:20::2/48 dev ns2_veth2
+
+    # enable seg6
+    echo_run ip netns exec ns1 $current_dir/../functions.sh enable_seg6
+    echo_run ip netns exec ns2 $current_dir/../functions.sh enable_seg6
 }
 
 
