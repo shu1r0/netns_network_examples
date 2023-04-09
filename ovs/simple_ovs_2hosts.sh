@@ -1,8 +1,20 @@
 #!/usr/bin/env bash
 
-## install ovs
-# apt install -y openvswitch-switch
-# systemctl start openvswitch-switch
+
+if [[ $(id -u) -ne 0 ]]; then 
+    echo "Require root privilege"
+    exit 1
+fi
+
+
+current_script=$(realpath $0)
+current_dir=$(dirname $current_script)
+
+
+echo_run () {
+    echo "$@"
+    $@ || exit 1
+}
 
 
 create_net() {

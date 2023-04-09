@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-## install ovs
-# apt install -y openvswitch-switch
-# systemctl start openvswitch-switch
 
-if [[ $(id -u) -ne 0 ]] ; then echo "Please run with sudo" ; exit 1 ; fi
+if [[ $(id -u) -ne 0 ]]; then 
+    echo "Require root privilege"
+    exit 1
+fi
 
 
 current_script=$(realpath $0)
