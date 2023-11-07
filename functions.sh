@@ -17,23 +17,23 @@ echo_ip_links(){
 }
 
 enable_forwarding(){
-    sysctl -w net.ipv4.ip_forward=1
-    sysctl -w net.ipv6.conf.all.forwarding=1
+    echo_run sysctl -w net.ipv4.ip_forward=1
+    echo_run sysctl -w net.ipv6.conf.all.forwarding=1
 }
 
 enable_seg6(){
     enable_forwarding
-    sysctl -w net.ipv6.conf.all.seg6_enabled=1
-    sysctl -w net.ipv4.conf.default.rp_filter=0
-    sysctl -w net.ipv4.conf.all.rp_filter=0
+    echo_run sysctl -w net.ipv6.conf.all.seg6_enabled=1
+    echo_run sysctl -w net.ipv4.conf.default.rp_filter=0
+    echo_run sysctl -w net.ipv4.conf.all.rp_filter=0
 
     for iface in $(echo_ip_links)
     do 
         attr=(${iface//@/ })
         iface_name=${attr[0]}
-        echo $iface_name
-        sysctl -w net.ipv6.conf.$iface_name.seg6_enabled=1
-        sysctl -w net.ipv4.conf.$iface_name.rp_filter=0
+        # echo $iface_name
+        echo_run sysctl -w net.ipv6.conf.$iface_name.seg6_enabled=1
+        echo_run sysctl -w net.ipv4.conf.$iface_name.rp_filter=0
     done
 }
 
@@ -74,5 +74,40 @@ add_link(){
     echo_run ip netns exec $node2 ip link set $node2_intf up
 }
 
+
+enable_ioam(){
+    enable_forwarding
+    
+    # for tunnel
+    echo_run modprobe ip6_tunnel
+    echo_run ip link set ip6tnl0 up
+
+    echo_run sysctl -w net.ipv4.conf.default.rp_filter=0
+    echo_run sysctl -w net.ipv4.conf.all.rp_filter=0
+
+    for iface in $(echo_ip_links)
+    do 
+        attr=(${iface//@/ })
+        iface_name=${attr[0]}
+        echo $iface_name
+        echo_run sysctl -w net.ipv4.conf.$iface_name.rp_filter=0
+        echo_run sysctl -w net.ipv6.conf.$iface_name.ioam6_enabled=1
+    done
+}
+
+setup_ioam_node(){
+    ioam6_id=$1
+    ioam6_id_wide=$2
+    echo_run sysctl -w net.ipv6.ioam6_id=$ioam6_id
+    echo_run sysctl -w net.ipv6.ioam6_id_wide=$ioam6_id_wide
+}
+
+setup_ioam_intf(){
+    intf=$1
+    ioam6_id=$2
+    ioam6_id_wide=$3
+    echo_run sysctl -w net.ipv6.conf.$intf.ioam6_id=$ioam6_id
+    echo_run sysctl -w net.ipv6.conf.$intf.ioam6_id_wide=$ioam6_id_wide
+}
 
 $@

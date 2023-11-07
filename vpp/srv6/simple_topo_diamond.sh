@@ -32,7 +32,7 @@ create_net() {
 
     echo_run add_link s1 s1_h1 h1_s1 h1
     echo_run add_link s1 s1_s2 s2_s1 s2
-    echo_run add_link s1 s1_s3 s3_s1 s3
+    echo_run add_link s1 s1_s4 s4_s1 s4
 
     echo_run add_link s2 s2_h2 h2_s2 h2
     echo_run add_link s2 s2_s3 s3_s2 s3
