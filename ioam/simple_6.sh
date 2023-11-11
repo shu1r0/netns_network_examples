@@ -31,8 +31,6 @@ create_net() {
     # create netns
     echo_run ip netns add h1
     echo_run ip netns add h2
-    echo_run ip netns add h3
-    echo_run ip netns add h4
     echo_run ip netns add r1
     echo_run ip netns add r2
     echo_run ip netns add r3
@@ -42,13 +40,11 @@ create_net() {
     echo_run add_link r1 r1_r2 r2_r1 r2
     echo_run add_link r1 r1_r3 r3_r1 r3
 
-    echo_run add_link r2 r2_h2 h2_r2 h2
     echo_run add_link r2 r2_r4 r4_r2 r4
 
-    echo_run add_link r3 r3_h3 h3_r3 h3
     echo_run add_link r3 r3_r4 r4_r3 r4
 
-    echo_run add_link r4 r4_h4 h4_r4 h4
+    echo_run add_link r4 r4_h2 h2_r4 h2
 
     echo_run ip netns exec r1 $current_dir/../functions.sh enable_seg6
     echo_run ip netns exec r2 $current_dir/../functions.sh enable_seg6
@@ -62,26 +58,14 @@ create_net() {
     echo_run ip netns exec h1 ip -6 addr add fd00:10::2/48 dev h1_r1
     echo_run ip netns exec h1 ip -6 route add default via fd00:10::1 dev h1_r1
 
-    echo_run ip netns exec r2 ip addr add 192.168.20.1/24 dev r2_h2
-    echo_run ip netns exec h2 ip addr add 192.168.20.2/24 dev h2_r2
-    echo_run ip netns exec h2 ip route add default via 192.168.20.1 dev h2_r2
-    echo_run ip netns exec r2 ip -6 addr add fd00:20::1/48 dev r2_h2
-    echo_run ip netns exec h2 ip -6 addr add fd00:20::2/48 dev h2_r2
-    echo_run ip netns exec h2 ip -6 route add default via fd00:20::1 dev h2_r2
 
-    echo_run ip netns exec r3 ip addr add 192.168.30.1/24 dev r3_h3
-    echo_run ip netns exec h3 ip addr add 192.168.30.2/24 dev h3_r3
-    echo_run ip netns exec h3 ip route add default via 192.168.30.1 dev h3_r3
-    echo_run ip netns exec r3 ip -6 addr add fd00:30::1/48 dev r3_h3
-    echo_run ip netns exec h3 ip -6 addr add fd00:30::2/48 dev h3_r3
-    echo_run ip netns exec h3 ip -6 route add default via fd00:30::1 dev h3_r3
 
-    echo_run ip netns exec r4 ip addr add 192.168.40.1/24 dev r4_h4
-    echo_run ip netns exec h4 ip addr add 192.168.40.2/24 dev h4_r4
-    echo_run ip netns exec h4 ip route add default via 192.168.40.1 dev h4_r4
-    echo_run ip netns exec r4 ip -6 addr add fd00:40::1/48 dev r4_h4
-    echo_run ip netns exec h4 ip -6 addr add fd00:40::2/48 dev h4_r4
-    echo_run ip netns exec h4 ip -6 route add default via fd00:40::1 dev h4_r4
+    echo_run ip netns exec r4 ip addr add 192.168.20.1/24 dev r4_h2
+    echo_run ip netns exec h2 ip addr add 192.168.20.2/24 dev h2_r4
+    echo_run ip netns exec h2 ip route add default via 192.168.20.1 dev h2_r4
+    echo_run ip netns exec r4 ip -6 addr add fd00:20::1/48 dev r4_h2
+    echo_run ip netns exec h2 ip -6 addr add fd00:20::2/48 dev h2_r4
+    echo_run ip netns exec h2 ip -6 route add default via fd00:20::1 dev h2_r4
 
     echo_run ip netns exec r1 ip -6 addr add fd00:12::1/48 dev r1_r2
     echo_run ip netns exec r2 ip -6 addr add fd00:12::2/48 dev r2_r1
@@ -114,13 +98,13 @@ configure_ioam(){
     echo_run ip netns exec r1 $current_dir/../functions.sh setup_ioam_intf r1_r3 0x0103 0x01030103
 
     echo_run ip netns exec r2 $current_dir/../functions.sh setup_ioam_intf r2_r1 0x0201 0x02010201
-    echo_run ip netns exec r2 $current_dir/../functions.sh setup_ioam_intf r2_r4 0x0204 0x02040204
+    echo_run ip netns exec r2 $current_dir/../functions.sh setup_ioam_intf r2_r4 0x0204 0x02020204
 
     echo_run ip netns exec r3 $current_dir/../functions.sh setup_ioam_intf r3_r1 0x0301 0x03010301
-    echo_run ip netns exec r3 $current_dir/../functions.sh setup_ioam_intf r3_r4 0x0304 0x03040304
+    echo_run ip netns exec r3 $current_dir/../functions.sh setup_ioam_intf r3_r4 0x0304 0x03020304
 
-    echo_run ip netns exec r4 $current_dir/../functions.sh setup_ioam_intf r4_r2 0x0402 0x04020402
-    echo_run ip netns exec r4 $current_dir/../functions.sh setup_ioam_intf r4_r3 0x0403 0x04030403
+    echo_run ip netns exec r4 $current_dir/../functions.sh setup_ioam_intf r4_r2 0x0202 0x02020202
+    echo_run ip netns exec r4 $current_dir/../functions.sh setup_ioam_intf r4_r3 0x0203 0x02030203
 
     echo "# Set Namespase id"
     echo_run ip netns exec r1 ip ioam namespace add $ns_id data $ns_spec_data wide $ns_spec_data_wide
@@ -140,38 +124,49 @@ test_net() {
     echo_run ip netns exec r4 ip -6 route replace fd00:12::/48 via fd00:24::1 dev r4_r2
     echo_run ip netns exec r4 ip -6 route replace fd00:13::/48 via fd00:34::1 dev r4_r3
 
+    sudo ip netns exec r1 ip ioam namespace show
+    sudo ip netns exec r1 ip ioam schema show
+
     # Trace Type
     # IOAM Option size = DataSize(n-octet) + TraceHeader(8-octet)
-    trace_type=0x800000
-    echo_run ip netns exec r1 ip -6 route replace fd00:40::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 12 dev r1_r2
+    trace_type=0x800000  # 0b1000 0000 0000 0000 0000 0000
+    echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 12 dev r1_r2
     echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 12 dev r4_r2
-    echo_run ip netns exec h1 ping -c 2 fd00:40::2
+    echo_run ip netns exec h1 ping -c 2 fd00:20::2
+
+    trace_type=0x820000  # 0b1000 0010 0000 0000 0000 0000
+    echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 12 dev r1_r2
+    echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 12 dev r4_r2
+    echo_run ip netns exec h1 ping -c 2 fd00:20::2
+
+    trace_type=0x00c000  # 0b1000 0000 0000 0000 0000 0000
+    echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 12 dev r1_r2
+    echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 12 dev r4_r2
+    echo_run ip netns exec h1 ping -c 2 fd00:20::2
 
     trace_type=0xd00000
-    echo_run ip netns exec r1 ip -6 route replace fd00:40::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 24 dev r1_r2
+    echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 24 dev r1_r2
     echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 24 dev r4_r2
-    echo_run ip netns exec h1 ping -c 2 fd00:40::2
+    echo_run ip netns exec h1 ping -c 2 fd00:20::2
 
-    trace_type=0x440000
-    echo_run ip netns exec r1 ip -6 route replace fd00:40::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 24 dev r1_r2
+    trace_type=0x420000
+    echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 24 dev r1_r2
     echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 24 dev r4_r2
-    echo_run ip netns exec h1 ping -c 2 fd00:40::2
+    echo_run ip netns exec h1 ping -c 2 fd00:20::2
 
     trace_type=0x800002
-    echo_run ip netns exec r1 ip -6 route replace fd00:40::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 24 dev r1_r2
+    echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 24 dev r1_r2
     echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 24 dev r4_r2
     echo_run ip netns exec r2 ip ioam schema add 666 \"Hello World!\"
     echo_run ip netns exec r2 ip ioam namespace set $ns_id schema 666
     # sudo ip netns exec r2 ip netns exec r2 ip ioam namespace show
-    echo_run ip netns exec h1 ping -c 2 fd00:40::2
+    echo_run ip netns exec h1 ping -c 2 fd00:20::2
 }
 
 
 destroy_net() {
     echo_run ip netns delete h1
     echo_run ip netns delete h2
-    echo_run ip netns delete h3
-    echo_run ip netns delete h4
     echo_run ip netns delete r1
     echo_run ip netns delete r2
     echo_run ip netns delete r3
