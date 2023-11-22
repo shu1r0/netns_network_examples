@@ -16,8 +16,8 @@ source $current_dir/../functions.sh
 
 ##### IOAM CONFIG #####
 ns_id=100
-ns_spec_data=0xdeadbee1
-ns_spec_data_wide=0xcafec0caf11dc0de
+ns_spec_data=0xbeefcafe
+ns_spec_data_wide=0xbeefbeefcafecafe
 
 echo_run () {
     echo "$@"
@@ -129,37 +129,57 @@ test_net() {
 
     # Trace Type
     # IOAM Option size = DataSize(n-octet) + TraceHeader(8-octet)
+    # size = 4 * 2
     trace_type=0x800000  # 0b1000 0000 0000 0000 0000 0000
-    echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 12 dev r1_r2
-    echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 12 dev r4_r2
+    echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 8 dev r1_r2
+    echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 8 dev r4_r2
     echo_run ip netns exec h1 ping -c 2 fd00:20::2
 
     trace_type=0x820000  # 0b1000 0010 0000 0000 0000 0000
-    echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 12 dev r1_r2
-    echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 12 dev r4_r2
+    # size = (4 + 4)* 2
+    echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 16 dev r1_r2
+    echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 16 dev r4_r2
     echo_run ip netns exec h1 ping -c 2 fd00:20::2
 
     trace_type=0x00c000  # 0b1000 0000 0000 0000 0000 0000
-    echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 12 dev r1_r2
-    echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 12 dev r4_r2
+    # size = (8 + 8)* 2
+    echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 32 dev r1_r2
+    echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 32 dev r4_r2
     echo_run ip netns exec h1 ping -c 2 fd00:20::2
 
-    trace_type=0xd00000
+    trace_type=0xf00000
+    # size = (4 + 4 + 4 + 4)* 2
+    echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 32 dev r1_r2
+    echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 32 dev r4_r2
+    echo_run ip netns exec h1 ping -c 2 fd00:20::2
+
+    trace_type=0x420000
+    # size = (4 + 4)* 2
+    echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 16 dev r1_r2
+    echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 16 dev r4_r2
+    echo_run ip netns exec h1 ping -c 2 fd00:20::2
+
+    trace_type=0x440000
+    # size = (4 + 4)* 2
     echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 24 dev r1_r2
     echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 24 dev r4_r2
     echo_run ip netns exec h1 ping -c 2 fd00:20::2
 
-    trace_type=0x420000
+    trace_type=0x840000
+    # size = (4 + 4)* 2
     echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 24 dev r1_r2
     echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 24 dev r4_r2
     echo_run ip netns exec h1 ping -c 2 fd00:20::2
 
     trace_type=0x800002
+    # size = (4 + (4+4))* 2
     echo_run ip netns exec r1 ip -6 route replace fd00:20::/48 encap ioam6 mode encap tundst fd00:24::2 trace prealloc type $trace_type ns $ns_id size 24 dev r1_r2
     echo_run ip netns exec r4 ip -6 route replace fd00:10::/48 encap ioam6 mode encap tundst fd00:12::1 trace prealloc type $trace_type ns $ns_id size 24 dev r4_r2
-    echo_run ip netns exec r2 ip ioam schema add 666 \"Hello World!\"
-    echo_run ip netns exec r2 ip ioam namespace set $ns_id schema 666
-    # sudo ip netns exec r2 ip netns exec r2 ip ioam namespace show
+    echo_run ip netns exec r1 ip ioam schema add 0x111 "oam1"
+    echo_run ip netns exec r1 ip ioam namespace set $ns_id schema 0x111
+    echo_run ip netns exec r2 ip ioam schema add 0x222 "oam2"
+    echo_run ip netns exec r2 ip ioam namespace set $ns_id schema 0x222
+    echo_run ip netns exec r2 ip netns exec r2 ip ioam namespace show
     echo_run ip netns exec h1 ping -c 2 fd00:20::2
 }
 
